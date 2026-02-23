@@ -1,0 +1,6 @@
+.env
+node_modules/
+dist/
+subscribers.json
+*.js
+!*.config.js

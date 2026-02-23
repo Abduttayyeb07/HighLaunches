@@ -1,0 +1,24 @@
+{
+  "name": "highbuy-monitor",
+  "version": "1.0.0",
+  "description": "Standalone ZigChain high-buy monitor Telegram bot",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "grammy": "^1.25.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
