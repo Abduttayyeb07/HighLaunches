@@ -1,0 +1,23 @@
+services:
+  highbuy-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: highbuy-monitor:latest
+    container_name: highbuy-monitor
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      SUBSCRIBERS_FILE: /app/state/subscribers.json
+    volumes:
+      - highbuy_state:/app/state
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  highbuy_state:

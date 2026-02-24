@@ -26,11 +26,12 @@ RUN npm install --omit=dev
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
-# Create an empty subscribers.json if it doesn't exist (to avoid mount issues)
-RUN echo "[]" > subscribers.json
+# Prepare persistent state directory
+RUN mkdir -p /app/state
 
 # Default environment variables
 ENV NODE_ENV=production
+ENV SUBSCRIBERS_FILE=/app/state/subscribers.json
 
 # Run the bot
 CMD ["node", "dist/index.js"]

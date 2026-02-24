@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import { config } from "./config";
 import { sendHighBuyAlert } from "./alert";
 
-const SUBSCRIBE_QUERY = `tm.event='Tx' AND wasm.action='swap'`;
+const SUBSCRIBE_QUERY = `tm.event='Tx'`;
 const MAX_RECONNECT_DELAY = 30_000;
 
 export function startSwapSubscription(): void {

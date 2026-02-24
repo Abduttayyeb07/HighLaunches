@@ -7,6 +7,10 @@ export interface Config {
     TELEGRAM_BOT_TOKEN: string;
     TELEGRAM_CHAT_IDS: string[];
     HIGH_BUY_MIN_ZIG: number;
+    CMC_API_KEY: string;
+    CMC_BASE_URL: string;
+    CMC_ZIG_SYMBOL: string;
+    CMC_ZIG_ID: string;
     DEFAULT_BANNER: string;
     SUBSCRIBERS_FILE: string;
 }
@@ -48,6 +52,10 @@ export const config: Config = {
         .map((s) => s.trim())
         .filter(Boolean),
     HIGH_BUY_MIN_ZIG: Number(optionalEnv("HIGH_BUY_MIN_ZIG", "100")),
-    DEFAULT_BANNER: "banner.png",
-    SUBSCRIBERS_FILE: "subscribers.json",
+    CMC_API_KEY: optionalEnv("CMC_API_KEY", ""),
+    CMC_BASE_URL: optionalEnv("CMC_BASE_URL", "https://pro-api.coinmarketcap.com"),
+    CMC_ZIG_SYMBOL: optionalEnv("CMC_ZIG_SYMBOL", "ZIG"),
+    CMC_ZIG_ID: optionalEnv("CMC_ZIG_ID", ""),
+    DEFAULT_BANNER: optionalEnv("DEFAULT_BANNER", "banner.png"),
+    SUBSCRIBERS_FILE: optionalEnv("SUBSCRIBERS_FILE", "subscribers.json"),
 };

@@ -5,6 +5,12 @@ import { config } from "./config";
 import { getSubscribers } from "./subscribers";
 import { maybeUnsubscribeOnForbidden } from "./utils";
 import { getDecimals, formatWithDecimals } from "./decimals";
+import {
+    formatUsd,
+    getTokenPriceUsd,
+    getUsdValue,
+    getZigPriceUsd,
+} from "./pricing";
 
 // Shared bot instance — set by index.ts
 let botInstance: Bot | null = null;
@@ -73,12 +79,23 @@ export async function sendHighBuyAlert(params: HighBuyAlertParams): Promise<void
 
     const spentFormatted = formatWithDecimals(offerAmount, offerDecimals);
     const gotFormatted = formatWithDecimals(returnAmount, askDecimals);
+    const [zigPriceUsd, offerTokenPriceUsd, askTokenPriceUsd] = await Promise.all([
+        getZigPriceUsd(),
+        getTokenPriceUsd(offerAsset),
+        getTokenPriceUsd(askAsset),
+    ]);
+
+    const spentUnitPriceUsd = offerAsset === "uzig" ? zigPriceUsd : offerTokenPriceUsd;
+    const spentTotalUsd = getUsdValue(offerAmount, offerDecimals, spentUnitPriceUsd);
+    const gotTotalUsd = getUsdValue(returnAmount, askDecimals, askTokenPriceUsd);
+    const spentUsdSuffix = spentTotalUsd === null ? "" : ` (${formatUsd(spentTotalUsd)})`;
+    const gotUsdSuffix = gotTotalUsd === null ? "" : ` (${formatUsd(gotTotalUsd)})`;
 
     const text = [
         `🚀 <b>HIGH BUY — ${boughtSymbol}</b>`,
         ``,
-        `💸 Spent: <b>${spentFormatted} ${spentSymbol}</b>`,
-        `💰 Got: <b>${gotFormatted} ${boughtSymbol}</b>`,
+        `💸 Spent: <b>${spentFormatted} ${spentSymbol}</b>${spentUsdSuffix}`,
+        `💰 Got: <b>${gotFormatted} ${boughtSymbol}</b>${gotUsdSuffix}`,
         ``,
         `👤 Buyer: <code>${sender}</code>`,
         `📥 Receiver: <code>${receiver}</code>`,
