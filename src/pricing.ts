@@ -54,8 +54,10 @@ export async function getTokenPriceUsd(denom: string): Promise<number | null> {
     if (cached !== undefined) return cached;
 
     try {
-        const url = `https://dev-api.degenter.io/tokens/${encodeURIComponent(denom)}/pools`;
-        const { data } = await axios.get(url, { timeout: 10_000 });
+        const url = `${config.DEGENTER_API_BASE}/tokens/${encodeURIComponent(denom)}/pools`;
+        const headers: Record<string, string> = {};
+        if (config.DEGENTER_API_KEY) headers["X-Api-Key"] = config.DEGENTER_API_KEY;
+        const { data } = await axios.get(url, { timeout: 10_000, headers });
         const price = extractPriceUsd(data);
         setCached(key, price);
         return price;
