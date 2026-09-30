@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import { config } from "./config";
 import { sendHighBuyAlert } from "./alert";
+import { ZIG_DENOM, ZIG_DECIMALS, parseRaw, rawToDecimalString } from "./zig";
 
 const SUBSCRIBE_QUERY = `tm.event='Tx'`;
 const MAX_RECONNECT_DELAY = 30_000;
@@ -59,17 +60,12 @@ export function startSwapSubscription(): void {
                     if (action !== "swap" && action !== "Swap") return;
 
                     const offerAsset = get("wasm.offer_asset");
-                    if (offerAsset !== "uzig") return;
+                    if (offerAsset !== ZIG_DENOM) return;
 
                     const offerAmount = get("wasm.offer_amount");
-                    let zigValue: number;
-                    try {
-                        zigValue = parseFloat(offerAmount) / 1_000_000;
-                    } catch {
-                        zigValue = 0;
-                    }
-
-                    if (isNaN(zigValue) || zigValue < config.HIGH_BUY_MIN_ZIG) return;
+                    const offerRaw = parseRaw(offerAmount);
+                    if (offerRaw === null || offerRaw < config.HIGH_BUY_MIN_RAW) return;
+                    const zigValue = rawToDecimalString(offerRaw, ZIG_DECIMALS).slice(0, -ZIG_DECIMALS + 2);
 
                     const sender = get("wasm.sender");
                     const receiver = get("wasm.receiver");
@@ -83,7 +79,7 @@ export function startSwapSubscription(): void {
                         : askAsset.toUpperCase();
 
                     console.log(
-                        `🚀 High buy: ${zigValue.toFixed(2)} ZIG → ${symbol} | tx: ${txHash?.slice(0, 12)}...`
+                        `🚀 High buy: ${zigValue} ZIG → ${symbol} | tx: ${txHash?.slice(0, 12)}...`
                     );
 
                     await sendHighBuyAlert({

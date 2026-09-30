@@ -1,5 +1,6 @@
 import axios from "axios";
 import { config } from "./config";
+import { parseRaw } from "./zig";
 
 const PRICE_TTL_MS = 30_000;
 
@@ -124,9 +125,12 @@ export function getUsdValue(
     priceUsd: number | null
 ): number | null {
     if (priceUsd === null) return null;
-    const raw = Number(rawAmount);
-    if (!Number.isFinite(raw)) return null;
-    const units = raw / Math.pow(10, decimals);
+    const raw = parseRaw(rawAmount);
+    if (raw === null) return null;
+    // Split in BigInt first so the 18-decimal integer never passes through Number();
+    // the final USD value is display-only, so float is fine from here.
+    const scale = 10n ** BigInt(decimals);
+    const units = Number(raw / scale) + Number(raw % scale) / Number(scale);
     if (!Number.isFinite(units)) return null;
     return units * priceUsd;
 }

@@ -1,12 +1,13 @@
 import axios from "axios";
 import { config } from "./config";
+import { ZIG_DENOM, ZIG_DECIMALS, parseRaw } from "./zig";
 
 /**
  * In-memory cache: denom → number of decimals.
  * Known defaults pre-seeded.
  */
 const decimalsCache = new Map<string, number>([
-    ["uzig", 6],
+    [ZIG_DENOM, ZIG_DECIMALS],
 ]);
 
 /**
@@ -59,22 +60,26 @@ export async function getDecimals(denom: string): Promise<number> {
  *      "29024932" with 0 decimals → "29,024,932"
  */
 export function formatWithDecimals(rawAmount: string, decimals: number): string {
-    const raw = parseFloat(rawAmount);
-    if (isNaN(raw)) return "0";
+    const raw = parseRaw(rawAmount);
+    if (raw === null) return "0";
 
-    const value = raw / Math.pow(10, decimals);
+    // Exact BigInt math (18-decimal amounts exceed Number's safe range)
+    const scale = 10n ** BigInt(decimals);
+    const intPart = (raw / scale).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
     if (decimals > 0) {
-        // Show 2 decimal places for divisible tokens
-        const [intPart, decPart] = value.toFixed(2).split(".");
-        const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return `${formatted}.${decPart}`;
-    } else {
-        // Whole number — just add commas
-        return Math.floor(value)
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        // Show 2 decimal places for divisible tokens (rounded half up)
+        const unit = scale / 100n;
+        let cents = unit > 0n ? (raw % scale + unit / 2n) / unit : (raw % scale) * 100n / scale;
+        let whole = raw / scale;
+        if (cents >= 100n) {
+            cents -= 100n;
+            whole += 1n;
+        }
+        const wholeStr = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return `${wholeStr}.${cents.toString().padStart(2, "0")}`;
     }
+    return intPart;
 }
 
 /** Short denom for logging (just the symbol part). */

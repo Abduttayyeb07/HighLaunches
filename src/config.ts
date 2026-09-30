@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { zigToRaw } from "./zig";
 
 export interface Config {
     RPC_URL: string;
@@ -7,6 +8,7 @@ export interface Config {
     TELEGRAM_BOT_TOKEN: string;
     TELEGRAM_CHAT_IDS: string[];
     HIGH_BUY_MIN_ZIG: number;
+    HIGH_BUY_MIN_RAW: bigint;
     DEGENTER_API_BASE: string;
     DEGENTER_API_KEY: string;
     CMC_API_KEY: string;
@@ -54,6 +56,8 @@ export const config: Config = {
         .map((s) => s.trim())
         .filter(Boolean),
     HIGH_BUY_MIN_ZIG: Number(optionalEnv("HIGH_BUY_MIN_ZIG", "100")),
+    // Threshold in raw azig (18 decimals), derived exactly from the ZIG value
+    HIGH_BUY_MIN_RAW: zigToRaw(optionalEnv("HIGH_BUY_MIN_ZIG", "100")),
     DEGENTER_API_BASE: optionalEnv("DEGENTER_API_BASE", "https://main-api.degenter.io"),
     DEGENTER_API_KEY: optionalEnv("DEGENTER_API_KEY", ""),
     CMC_API_KEY: optionalEnv("CMC_API_KEY", ""),

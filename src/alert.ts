@@ -4,6 +4,7 @@ import { Bot, InlineKeyboard, InputFile } from "grammy";
 import { config } from "./config";
 import { getSubscribers } from "./subscribers";
 import { maybeUnsubscribeOnForbidden } from "./utils";
+import { ZIG_DENOM } from "./zig";
 import { getDecimals, formatWithDecimals } from "./decimals";
 import {
     formatUsd,
@@ -33,10 +34,10 @@ export interface HighBuyAlertParams {
 /**
  * Extract a clean token symbol from a denom string.
  * "coin.zig15nes6ctvl...karakchai" → "KARAKCHAI"
- * "uzig" → "ZIG"
+ * "azig" → "ZIG"
  */
 function cleanSymbol(denom: string): string {
-    if (denom === "uzig") return "ZIG";
+    if (denom === ZIG_DENOM) return "ZIG";
 
     if (denom.includes(".")) {
         const parts = denom.split(".");
@@ -85,7 +86,7 @@ export async function sendHighBuyAlert(params: HighBuyAlertParams): Promise<void
         getTokenPriceUsd(askAsset),
     ]);
 
-    const spentUnitPriceUsd = offerAsset === "uzig" ? zigPriceUsd : offerTokenPriceUsd;
+    const spentUnitPriceUsd = offerAsset === ZIG_DENOM ? zigPriceUsd : offerTokenPriceUsd;
     const spentTotalUsd = getUsdValue(offerAmount, offerDecimals, spentUnitPriceUsd);
     const gotTotalUsd = getUsdValue(returnAmount, askDecimals, askTokenPriceUsd);
     const spentUsdSuffix = spentTotalUsd === null ? "" : ` (${formatUsd(spentTotalUsd)})`;
@@ -134,8 +135,5 @@ export async function sendHighBuyAlert(params: HighBuyAlertParams): Promise<void
         }
     }
 
-    const zigValue = parseFloat(offerAmount) / 1_000_000;
-    console.log(
-        `📣 Alert sent: ${boughtSymbol} | ${zigValue.toFixed(2)} ZIG`
-    );
+    console.log(`📣 Alert sent: ${boughtSymbol} | ${spentFormatted} ${spentSymbol}`);
 }

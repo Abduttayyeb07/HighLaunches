@@ -1,18 +1,14 @@
 import { GrammyError } from "grammy";
 import { getSubscribers, removeSubscriber } from "./subscribers";
+import { formatWithDecimals } from "./decimals";
+import { ZIG_DECIMALS } from "./zig";
 
 /**
- * Format a raw micro-amount (string) into a human-readable number.
- * e.g. "123456789" → "123.456789"
- * For display, we also add thousand-separators to the integer part.
+ * Format a raw azig amount (string, 18 decimals) into a human-readable number
+ * with thousand-separators and 2 decimal places.
  */
 export function fmtAmount(raw: string): string {
-    const num = parseFloat(raw) / 1_000_000;
-    if (isNaN(num)) return "0";
-
-    const [intPart, decPart] = num.toFixed(2).split(".");
-    const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return decPart ? `${formatted}.${decPart}` : formatted;
+    return formatWithDecimals(raw, ZIG_DECIMALS);
 }
 
 /**
